@@ -1,4 +1,5 @@
 ./streamlit
+.streamlit/secrets.toml
 .env
 pages/ticketclassification.pyx
 __pycache__/
