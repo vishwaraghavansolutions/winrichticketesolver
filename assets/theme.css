@@ -1,0 +1,54 @@
+:root {
+    /* Colors */
+    --color-bg: #fafafa;
+    --color-bg-dark: #1e1e1e;
+
+    --color-border: #e6e6e6;
+    --color-border-dark: #333;
+
+    --color-text-primary: #1a1a1a;
+    --color-text-primary-dark: #ffffff;
+
+    --color-text-secondary: #222;
+    --color-text-secondary-dark: #f0f0f0;
+
+    /* Badges */
+    --badge-positive-bg: #e6f4ea;
+    --badge-positive-text: #137333;
+
+    --badge-neutral-bg: #e8eaed;
+    --badge-neutral-text: #2a2a2a;
+
+    --badge-negative-bg: #fce8e6;
+    --badge-negative-text: #c5221f;
+
+    /* SLA */
+    --sla-low-bg: #e6f4ea;
+    --sla-low-text: #137333;
+
+    --sla-medium-bg: #fff4ce;
+    --sla-medium-text: #8a6d1d;
+
+    --sla-high-bg: #fce8e6;
+    --sla-high-text: #c5221f;
+
+    /* Chat bubbles */
+    --bubble-customer-bg: #f1f1f1;
+    --bubble-customer-text: #000;
+
+    --bubble-agent-bg: #e0e7ef;
+    --bubble-agent-text: #000;
+
+    /* Section tags */
+    --section-tag-bg: #d4e4ff;
+    --section-tag-border: #9bb8ff;
+    --section-tag-text: #174ea6;
+
+    /* Radii */
+    --radius-card: 10px;
+    --radius-bubble: 12px;
+
+    /* Shadows */
+    --shadow-light: 0 2px 6px rgba(0,0,0,0.08);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.12);
+}

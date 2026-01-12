@@ -1,0 +1,35 @@
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+}
+
+.card {
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-light);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.chat-bubble-customer {
+    background-color: var(--bubble-customer-bg);
+    color: var(--bubble-customer-text);
+}
+
+.chat-bubble-agent {
+    background-color: var(--bubble-agent-bg);
+    color: var(--bubble-agent-text);
+}
+
+.section-tag {
+    background-color: var(--section-tag-bg);
+    border: 1px solid var(--section-tag-border);
+    color: var(--section-tag-text);
+}

@@ -1,0 +1,38 @@
+@media (max-width: 768px) {
+    .card {
+        padding: 0.8rem;
+    }
+
+    .chat-bubble {
+        max-width: 100%;
+        font-size: 0.85rem;
+    }
+
+    .details-table th {
+        width: 120px;
+        font-size: 0.85rem;
+    }
+
+    .details-table td {
+        font-size: 0.85rem;
+    }
+
+    .section-tag {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 0.6rem;
+    }
+
+    .chat-bubble {
+        font-size: 0.8rem;
+    }
+
+    .details-table th {
+        width: 100px;
+    }
+}
