@@ -1,6 +1,8 @@
-./streamlit
-.streamlit/secrets.toml
-.env
-pages/ticketclassification.pyx
 __pycache__/
-login.py
+*.pyc
+.env
+.streamlit/secrets.toml
+*.parquet
+*.csv
+venv/
+.venv/
