@@ -458,7 +458,6 @@ elif post_and_resolve:
         st.session_state.ticket_index = max(0, st.session_state.ticket_index - 1)
         st.session_state["comment_text"] = comment_text
         st.success("Ticket resolved")
-        time.sleep(1)
         st.rerun()
 
 logout_col = st.columns([6, 1])[1]

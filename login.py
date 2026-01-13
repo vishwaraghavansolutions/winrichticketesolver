@@ -13,7 +13,6 @@ def encode_password(pw: str) -> str:
 # ---------------------------------------------------------
 def load_agents(storage, bucket, agents_path):
     raw = storage.read_json(bucket, agents_path)
-    st.write(raw)
     return raw
 
 # ---------------------------------------------------------
