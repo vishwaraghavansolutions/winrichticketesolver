@@ -64,6 +64,16 @@ def save_queue_resolver(storage, bucket, path, data):
         return False
 
 # ---------------------------------------------------------
+# Save queue resolver JSON
+# ---------------------------------------------------------
+def load_queue_resolver(storage, bucket, path):
+    try:
+        return storage.read_json(bucket, path)
+
+    except Exception as e:
+        st.error(f"Error saving queue_resolver.json: {e}")
+        return False
+# ---------------------------------------------------------
 # MAIN STREAMLIT APP
 # ---------------------------------------------------------
 def main():
@@ -137,16 +147,23 @@ def main():
         col1, col2 = st.columns([2, 3])
 
         col1.write(product)
+        resolver_old = load_queue_resolver(s3, bucket, resolver_path)
+
+        current_agent = resolver_old.get(product)
+        agent_list = list(agent_names.keys())
+
+        # Determine the index of the current agent (fallback to 0 if missing)
+        default_index = agent_list.index(current_agent) if current_agent in agent_list else 0
 
         agent_choice = col2.selectbox(
             f"Assign agent for {product}",
-            options=list(agent_names.keys()),
+            options=agent_list,
+            index=default_index,
             format_func=lambda x: f"{x} — {agent_names[x]}",
             key=f"agent_for_{product}"
         )
 
         resolver[product] = agent_choice
-
     # -----------------------------------------------------
     # Save button
     # -----------------------------------------------------
@@ -155,7 +172,6 @@ def main():
     # -----------------------------------------
     missing = [p for p, a in resolver.items() if not a]
 
-    st.write("missing:", missing)  # Debug line; can be removed
     if missing:
         st.error(
             "Some products do not have an assigned agent. "
@@ -167,7 +183,7 @@ def main():
             "\n".join(f"- {p}" for p in missing)
         )
     else:
-        if st.button("Save Queue Resolver Mapping"):
+        if st.button("Save Product to Agent Mapping"):
             ok = save_queue_resolver(s3, bucket, resolver_path, resolver)
             if ok:
                 st.success("queue_resolver.json saved to S3 successfully!")

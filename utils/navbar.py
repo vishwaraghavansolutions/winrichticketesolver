@@ -29,11 +29,11 @@ def navbar():
             st.switch_page("pages/admin_home.py")
 
     with cols[1]:
-        if st.button("👥 Agents", key="nav_agents"):
+        if st.button("👥 Manage Agents", key="nav_agents"):
             st.switch_page("pages/admin_agents.py")
 
     with cols[2]:
-        if st.button("🧩 Resolver", key="nav_resolver"):
+        if st.button("🧩 Map Product to Agents", key="nav_resolver"):
             st.switch_page("pages/queue_resolver.py")
 
     with cols[3]:

@@ -147,7 +147,32 @@ def admin_manage_agents(storage, bucket: str, path: str):
     st.subheader("Current Agents")
     st.dataframe(agents_df.sort_values("agent_id"), use_container_width=True)
 
+    # -----------------------------
+    # REMOVE PASSWORD
+    # -----------------------------
+    st.subheader("Remove Password")
 
+    if len(agents_df) == 0:
+        st.info("No agents available.")
+    else:
+        display_list = [
+            f"{data['agent_id']} — {data['agent_name']}"
+            for _, data in agents_df.iterrows()
+        ]
+
+    selected = st.selectbox("Select agent to clear password", display_list)
+
+    if st.button("Remove Password", type="secondary"):
+        agent_id = selected.split(" — ")[0]
+        st.write(f"Removing password for agent: {agent_id}")
+        st.write(agents_df)
+        # Remove the password field entirely
+        agents_df.loc[agents_df["agent_id"] == agent_id, "password"] = None
+
+        # Save back to storage
+        save_agents_json(storage, bucket, path, agents_df)
+        
+        st.success(f"Password removed for agent: {agent_id}")
 # =====================================================
 # STREAMLIT ENTRY POINT
 # =====================================================

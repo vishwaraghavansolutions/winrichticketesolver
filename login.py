@@ -76,7 +76,7 @@ if submitted:
         # -------------------------------
         # AGENT HAS NO PASSWORD → MOVE TO PHASE 2
         # -------------------------------
-        if "password" not in agent or not agent["password"]:
+        if "password" not in agent or not agent["password"] or agent["password"] == "":
             st.info("No password found. Please set a new password.")
 
             # Store agent info in session so next form can use it
