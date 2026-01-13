@@ -1,4 +1,4 @@
-from datetime import time
+import time
 import streamlit as st
 
 # ---------------------------------------------------------
@@ -32,7 +32,7 @@ if st.session_state.get("role") != "admin":
 # Admin Action Panels
 # ---------------------------------------------------------
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 # ------------------ Refresh Queue Data -------------------
 with col1:
@@ -40,9 +40,7 @@ with col1:
     st.write("Reload the latest ticket queue from Parquet or S3.")
     if st.button("Refresh Now", use_container_width=True):
         st.session_state["admin_page"] = "refresh_queue"
-        # TODO: plug in your refresh logic
-        # refresh_queue_data()
-        st.success("Queue data refreshed successfully.")
+
 
 # ------------------ Administer Agents --------------------
 with col2:
@@ -58,6 +56,13 @@ with col3:
     if st.button("Edit Resolver", use_container_width=True):
         st.session_state["admin_page"] = "resolver"
 
+# ------------------ Resolver Assignment ------------------
+with col4:
+    st.markdown("### 🧩 Analytics")
+    st.write("View metrics and Reports.")
+    if st.button("View Analytics", use_container_width=True):
+        st.session_state["admin_page"] = "Analytics"
+
 st.markdown("---")
 
 # ---------------------------------------------------------
@@ -68,32 +73,33 @@ if "admin_page" in st.session_state:
 
     # ------------------ Agent Manager Page ------------------
     if st.session_state["admin_page"] == "refresh_queue":
-        st.header("� Refresh Queue Data")
-        st.write("Reload the latest ticket queue from Parquet or S3.")
-
-        # TODO: Replace with your agent management UI
-        st.info("Agent management UI goes here.")
+        st.success("Loading refresh queue page ...")
+        time.sleep(3)
+        del st.session_state["admin_page"]
         st.switch_page("pages/newticketmanager.py")
 
     # ------------------ Agent Manager Page ------------------
     if st.session_state["admin_page"] == "agents":
-        st.header("👥 Agent Manager")
-        st.write("Manage agent list, roles, and assignments.")
-
-        # TODO: Replace with your agent management UI
-        st.info("Agent management UI goes here.")
+        st.success("Loading admin page...")
+        time.sleep(3)
+        del st.session_state["admin_page"]
         st.switch_page("pages/admin_agents.py")
 
     # ------------------ Resolver Editor Page ------------------
     elif st.session_state["admin_page"] == "resolver":
-        st.header("🧩 Product → Agent Resolver")
-        st.write("Assign each product to an agent.")
+        st.success("Loading resolver editor...")
+        time.sleep(3)
+        del st.session_state["admin_page"]
 
         st.switch_page("pages/queue_resolver.py")
-        del st.session_state["admin_page"]
-        # TODO: Replace with your resolver editor UI
-        st.info("Resolver editor UI goes here.")
 
+    # ------------------ Resolver Editor Page ------------------
+    elif st.session_state["admin_page"] == "Analytics":
+        st.success("Loading analytics page...")
+        time.sleep(3)
+        del st.session_state["admin_page"]
+
+        st.switch_page("pages/dashboard.py")
 
 # Top-right logout button
 logout_col = st.columns([6, 1])[1]
