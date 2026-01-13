@@ -10,6 +10,13 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown("""
+### 📘 Getting started?
+You can read the full **Admin README** which explains the entire workflow from initial login, agent setup, importing GCP data, resolver assignment, and how agents begin working on tickets.
+
+👉 **Click the link below to open the README in a new tab:**
+[Open Admin README](https://winrichticketesolver.streamlit.app/admin_read_me)
+""")
 
 # ---------------------------------------------------------
 # Hero Section
