@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 from utils.s3storage import S3Storage
+import utils.navbar as navbar
 
 # ---------------------------------------------------------
 # Load Datast.dataframe(sentiment_product)
@@ -76,7 +77,7 @@ last_24h = resolved_tickets[
 # ---------------------------------------------------------
 # Dashboard Layout
 # ---------------------------------------------------------
-
+navbar.navbar()
 st.title("📊 Ticket Analytics Dashboard")
 
 col1, col2, col3 = st.columns(3)

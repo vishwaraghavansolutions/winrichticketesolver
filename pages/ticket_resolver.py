@@ -7,6 +7,8 @@ from utils.s3storage import S3Storage
 from utils.TicketResolver import TicketResolver
 from dateutil import parser
 import re
+import utils.agentnavbar as agentnavbar
+import utils.navbar as navbar
 
 
 # ---------------------------------------------------------
@@ -94,9 +96,15 @@ load_css_files([
 ])
 
 if "role" not in st.session_state or st.session_state["role"] != "agent" and st.session_state["role"] != "admin":   
+    agentnavbar.agentnavbar
     st.error("Access denied. Agents only.")
     st.button("Go to Login Page", on_click=st.switch_page("login.py"))
     st.stop()
+
+if st.session_state.get("role") == "admin":
+    navbar.navbar()
+else:
+    agentnavbar.agentnavbar()
 
 # ---------------------------------------------------------
 # CLOUD CONFIG + LOAD DATA

@@ -3,6 +3,7 @@ from time import time
 import pandas as pd
 import streamlit as st
 from utils.s3storage import S3Storage
+import utils.navbar as navbar
 
 # =====================================================
 # S3 JSON LOAD / SAVE HELPERS
@@ -154,6 +155,7 @@ def admin_manage_agents(storage, bucket: str, path: str):
 def main():
     # Replace with your actual storage adapter
 
+    navbar.navbar()
     s3 = S3Storage(aws_access_key=st.secrets["aws"]["access_key"],
                     aws_secret_key=st.secrets["aws"]["secret_key"],
                     region=st.secrets["aws"].get("region", "ap-south-1"),)

@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import re
 from collections import Counter
+import utils.navbar as navbar
 
 from utils.s3storage import S3Storage
 
@@ -66,6 +67,7 @@ def save_queue_resolver(storage, bucket, path, data):
 # MAIN STREAMLIT APP
 # ---------------------------------------------------------
 def main():
+    navbar.navbar()
 
     st.title("Queue Resolver Configuration")
     st.caption("Map customer request types to agents for intelligent routing.")

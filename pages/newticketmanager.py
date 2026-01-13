@@ -8,6 +8,7 @@ import pandas as pd
 from openai import AsyncOpenAI
 from utils.gcs_storage import GCSStorage
 from utils.s3storage import S3Storage
+import utils.navbar as navbar
 
 client = AsyncOpenAI()
 
@@ -261,6 +262,7 @@ def build_queue(df: pd.DataFrame, progress_mode: str) -> pd.DataFrame:
 # ---------- Streamlit app ----------
 
 def main():
+    navbar.navbar()
     st.title("📌 Ticket Queue Builder")
     if st.session_state.get("role") != "admin":
         st.error("Access denied. Admins only.")
