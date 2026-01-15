@@ -10,3 +10,4 @@ openpyxl
 google-cloud-storage
 matplotlib
 TextBlob
+sns
