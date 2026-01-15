@@ -31,10 +31,12 @@ def agentnavbar():
        st.write(" ")
 
     with cols[2]:
-       st.write(" ")
+        if st.button("📊 Agent Analytics", key="nav_analytics"):
+            st.switch_page("pages/agent_analytics.py")
 
     with cols[3]:
-        st.write(" ")
+        if st.button("📊 Agent AI Coach", key="nav_coach"):
+            st.switch_page("pages/agent_coach.py")
 
     with cols[4]:
         if st.button("🚪 Logout", key="nav_logout"):

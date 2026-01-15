@@ -14,7 +14,6 @@ def extract_request_themes(df, top_n=5):
     themes = {}
 
     for product, group in df.groupby("product_name"):
-        # Take the values exactly as they appear
         requests = (
             group["nature_of_customer_request"]
             .dropna()
@@ -23,7 +22,6 @@ def extract_request_themes(df, top_n=5):
             .tolist()
         )
         themes[product] = requests
-
 
     return themes
 
@@ -40,6 +38,7 @@ def load_parquet_from_s3(storage, bucket, path):
 
     return raw
 
+
 # ---------------------------------------------------------
 # Load agents JSON
 # ---------------------------------------------------------
@@ -52,6 +51,7 @@ def load_agents(storage, bucket, path):
 
     return raw
 
+
 # ---------------------------------------------------------
 # Save queue resolver JSON
 # ---------------------------------------------------------
@@ -63,16 +63,19 @@ def save_queue_resolver(storage, bucket, path, data):
         st.error(f"Error saving queue_resolver.json: {e}")
         return False
 
+
 # ---------------------------------------------------------
-# Save queue resolver JSON
+# Load queue resolver JSON
 # ---------------------------------------------------------
 def load_queue_resolver(storage, bucket, path):
     try:
-        return storage.read_json(bucket, path)
-
+        data = storage.read_json(bucket, path)
+        return data if data else {}
     except Exception as e:
-        st.error(f"Error saving queue_resolver.json: {e}")
-        return False
+        st.error(f"Error loading queue_resolver.json: {e}")
+        return {}
+
+
 # ---------------------------------------------------------
 # MAIN STREAMLIT APP
 # ---------------------------------------------------------
@@ -81,22 +84,25 @@ def main():
 
     st.title("Queue Resolver Configuration")
     st.caption("Map customer request types to agents for intelligent routing.")
+
     with st.expander("ℹ️ How to Use the Queue Resolver Tool"):
         st.markdown("""
-        The Queue Resolver allows you to assign a responsible agent to each product.  
-        These assignments are used by the ticketing system to automatically route new customer tickets to the correct agent.
+        The Queue Resolver allows you to assign a responsible agent to each product.
+        These assignments are used by the ticketing system to automatically route new customer tickets.
 
         **How to use this tool:**
         - Review the list of products displayed.
-        - Select the appropriate agent for each product using the dropdown menus.
+        - Select the appropriate agent for each product.
+        - Set the SLA (in hours) for each product.
         - Save your assignments when finished.
-
-        Once saved, the system will consistently route incoming tickets based on your selections, ensuring clear ownership and efficient handling.
         """)
+
+    # Admin check
     if "role" not in st.session_state or st.session_state["role"] != "admin":
         st.error("Access denied. Admins only.")
         st.button("Go to Login Page", on_click=st.switch_page("login.py"))
         st.stop()
+
     # -----------------------------------------------------
     # Storage Adapter Setup
     # -----------------------------------------------------
@@ -105,7 +111,7 @@ def main():
         aws_secret_key=st.secrets["aws"]["secret_key"],
         region=st.secrets["aws"].get("region", "ap-south-1"),
     )
-    # Cloud config from secrets
+
     bucket = st.secrets["aws"]["bucket"]
     parquet_path = st.secrets["aws"]["output_path"]
     agents_path = st.secrets["aws"]["agents_path"]
@@ -125,34 +131,44 @@ def main():
     if not agents:
         st.stop()
 
+    agent_names = {a["agent_id"]: a["agent_name"] for a in agents}
+
+    # -----------------------------------------------------
+    # Load existing resolver (combined structure)
+    # -----------------------------------------------------
+    resolver_old = load_queue_resolver(s3, bucket, resolver_path)
+
     # -----------------------------------------------------
     # Display products
     # -----------------------------------------------------
     products = sorted(df["product_name"].dropna().unique().tolist())
-    # -----------------------------------------------------
-    # Build Product → Agent mapping UI (Tabular Layout)
-    # -----------------------------------------------------
-    st.subheader("Map Products to Agents")
-    agent_names = {a["agent_id"]: a["agent_name"] for a in agents}
-    resolver = {}
 
-    st.caption("Use the dropdowns below to assign an agent to each product. This assignment will determine who handles tickets for that product.")
+    st.subheader("Map Products to Agents & SLA")
+    st.caption("Assign an agent and SLA (in hours) for each product.")
+
+    resolver_new = {}
+
     # Table header
- 
-    cols = st.columns([2, 3])
+    cols = st.columns([2, 3, 2])
     cols[0].markdown("**Product**")
     cols[1].markdown("**Assigned Agent**")
+    cols[2].markdown("**SLA (hrs)**")
 
+    # -----------------------------------------------------
+    # Build UI
+    # -----------------------------------------------------
     for product in products:
-        col1, col2 = st.columns([2, 3])
+        col1, col2, col3 = st.columns([2, 3, 2])
 
         col1.write(product)
-        resolver_old = load_queue_resolver(s3, bucket, resolver_path)
 
-        current_agent = resolver_old.get(product)
+        # Load previous values
+        previous = resolver_old.get(product, {})
+        current_agent = previous.get("agent")
+        current_sla = previous.get("sla", 24)
+
+        # Agent selection
         agent_list = list(agent_names.keys())
-
-        # Determine the index of the current agent (fallback to 0 if missing)
         default_index = agent_list.index(current_agent) if current_agent in agent_list else 0
 
         agent_choice = col2.selectbox(
@@ -163,30 +179,30 @@ def main():
             key=f"agent_for_{product}"
         )
 
-        resolver[product] = agent_choice
+        # SLA input
+        sla_value = col3.number_input(
+            f"SLA for {product}",
+            min_value=1,
+            max_value=240,
+            value=current_sla,
+            key=f"sla_for_{product}"
+        )
+
+        # Combined structure
+        resolver_new[product] = {
+            "agent": agent_choice,
+            "sla": sla_value
+        }
+
     # -----------------------------------------------------
     # Save button
     # -----------------------------------------------------
-    # -----------------------------------------
-    # VALIDATION: Ensure every product is mapped
-    # -----------------------------------------
-    missing = [p for p, a in resolver.items() if not a]
+    st.markdown("---")
 
-    if missing:
-        st.error(
-            "Some products do not have an assigned agent. "
-            "Please complete all assignments before saving."
-        )
-
-        st.markdown(
-            "**Unassigned products:**\n" +
-            "\n".join(f"- {p}" for p in missing)
-        )
-    else:
-        if st.button("Save Product to Agent Mapping"):
-            ok = save_queue_resolver(s3, bucket, resolver_path, resolver)
-            if ok:
-                st.success("queue_resolver.json saved to S3 successfully!")
+    if st.button("Save Product → Agent + SLA Mapping"):
+        ok = save_queue_resolver(s3, bucket, resolver_path, resolver_new)
+        if ok:
+            st.success("queue_resolver.json saved to S3 successfully!")
 
 
 # ---------------------------------------------------------

@@ -23,24 +23,24 @@ st.set_page_config(
 # ---------------------------------------------------------
 st.markdown("""
     <div style="padding: 20px 0; text-align: center;">
-        <h1 style="margin-bottom: 0;">🛠️ Admin Control Center</h1>
+        <h1 style="margin-bottom: 0;">🛠️ Agent Control Center</h1>
         <p style="font-size: 18px; color: #666;">
-            Manage queue data, agents, and product resolver mappings — all in one place.
+            Agent can review their metrics and use AI coaching help
         </p>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
 
-if st.session_state.get("role") != "admin":
-    st.error("Access denied. Admins only.")
+if st.session_state.get("role") != "agent":
+    st.error("Access denied. Agents only.")
     st.button("Go to Login Page", on_click=st.switch_page("login.py"))
     st.stop()
 # ---------------------------------------------------------
 # Admin Action Panels
 # ---------------------------------------------------------
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 # ------------------ Refresh Queue Data -------------------
 # with col1:
@@ -53,24 +53,17 @@ col1, col2, col3 = st.columns(3)
 
 # ------------------ Administer Agents --------------------
 with col1:
-    st.markdown("### 👥 Manage Agents")
-    st.write("Add, remove, or update agent profiles and permissions.")
-    if st.button("Open Agent Manager", use_container_width=True):
-        st.session_state["admin_page"] = "agents"
+    st.markdown("### 👥 View My metrics")
+    st.write("View Detailed metrics about my performances")
+    if st.button("View Analytics", use_container_width=True):
+        st.session_state["admin_page"] = "agent_analytics"
 
 # ------------------ Resolver Assignment ------------------
 with col2:
-    st.markdown("### 🧩 Assign SLA, Agents to Products ")
-    st.write("Assign products to agents for ticket routing.")
-    if st.button("Edit Resolver", use_container_width=True):
-        st.session_state["admin_page"] = "resolver"
-
-# ------------------ Resolver Assignment ------------------
-with col3:
-    st.markdown("### 🧩 Analytics")
-    st.write("View metrics and Reports.")
-    if st.button("View Analytics", use_container_width=True):
-        st.session_state["admin_page"] = "Analytics"
+    st.markdown("### 🧩 Agent Coach ")
+    st.write("Deep Dive into tickets I resolved and view AI recommendations and suggestions ")
+    if st.button("Agent Coach", use_container_width=True):
+        st.session_state["admin_page"] = "agent_coach"
 
 st.markdown("---")
 
@@ -88,27 +81,18 @@ if "admin_page" in st.session_state:
         #     st.switch_page("pages/newticketmanager.py")
 
     # ------------------ Agent Manager Page ------------------
-    if st.session_state["admin_page"] == "agents":
-        st.success("Loading admin page...")
+    if st.session_state["admin_page"] == "agent_analytics":
+        st.success("Loading agent analytics page...")
         time.sleep(3)
         del st.session_state["admin_page"]
-        st.switch_page("pages/admin_agents.py")
+        st.switch_page("pages/agent_analytics.py")
 
     # ------------------ Resolver Editor Page ------------------
-    elif st.session_state["admin_page"] == "resolver":
-        st.success("Loading resolver editor...")
+    elif st.session_state["admin_page"] == "agent_coach":
+        st.success("Loading agent coach editor...")
         time.sleep(3)
         del st.session_state["admin_page"]
-
-        st.switch_page("pages/queue_resolver.py")
-
-    # ------------------ Resolver Editor Page ------------------
-    elif st.session_state["admin_page"] == "Analytics":
-        st.success("Loading analytics page...")
-        time.sleep(3)
-        del st.session_state["admin_page"]
-
-        st.switch_page("pages/analytics.py")
+        st.switch_page("pages/agent_coach.py")
 
 # Top-right logout button
 logout_col = st.columns([6, 1])[1]

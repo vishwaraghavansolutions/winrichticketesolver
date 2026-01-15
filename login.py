@@ -93,7 +93,7 @@ if submitted:
                 st.session_state["agent_id"] = agent["agent_id"]
                 st.session_state["agent_name"] = agent["agent_name"]
                 time.sleep(3)
-                st.switch_page("pages/ticket_resolver.py")
+                st.switch_page("pages/agent_home.py")
             else:
                 st.error("Invalid password")
                 st.stop()

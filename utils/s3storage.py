@@ -43,11 +43,16 @@ class S3Storage(StorageAdapter):
     # READ
     # -----------------------------
     def read_csv(self, bucket: str, path: str, **kwargs) -> pd.DataFrame:
+        
         obj = self.s3.get_object(Bucket=bucket, Key=path)
         return pd.read_csv(io.BytesIO(obj["Body"].read()), **kwargs)
 
     def read_parquet(self, bucket: str, path: str, **kwargs) -> pd.DataFrame:
-        obj = self.s3.get_object(Bucket=bucket, Key=path)
+        try:
+            obj = self.s3.get_object(Bucket=bucket, Key=path)
+        except Exception as e:
+            if "NoSuchKey" in str(e):
+                return pd.DataFrame()
         return pd.read_parquet(io.BytesIO(obj["Body"].read()), **kwargs)
 
     def bucket_and_key_exist(self, bucket_name, key_name):    
