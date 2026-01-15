@@ -9,3 +9,4 @@ boto3
 openpyxl
 google-cloud-storage
 matplotlib
+TextBlob
