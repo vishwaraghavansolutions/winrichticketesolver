@@ -126,7 +126,9 @@ if "role" not in st.session_state or st.session_state["role"] != "agent":
     st.error("Access denied. Admins only.")
     st.button("Go to Login Page", on_click=st.switch_page("login.py"))
     st.stop()
-    
+
+st.write(f"Welcome {st.session_state["agent_name"]}")
+                     
 s3 = S3Storage(
     aws_access_key=st.secrets["aws"]["access_key"],
     aws_secret_key=st.secrets["aws"]["secret_key"],
@@ -143,7 +145,7 @@ agent_metrics = compute_agent_performance(ticket_agg)
 trend_df = compute_agent_sentiment_trend(ticket_agg)
 
 agents = sorted(agent_metrics.keys())
-selected_agent = st.selectbox("Select agent", agents)
+selected_agent = st.session_state["agent_id"]
 
 m = agent_metrics[selected_agent]
 # Metrics

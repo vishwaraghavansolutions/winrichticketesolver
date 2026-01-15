@@ -419,6 +419,9 @@ def main():
 
     st.write(f"Welcome {st.session_state["agent_name"]}")
 
+        agent_name = st.session_state["agent_id"]
+    ticket_agg = ticket_agg[ticket_agg["assigned_agent"] == agent_name]
+
     # Storage setup
     gcs = GCSStorage(credentials_key="gcp")
     # Cloud config from secrets
