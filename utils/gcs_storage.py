@@ -71,6 +71,12 @@ class GCSStorage(StorageAdapter):
     # ---------------------------------------------------------
     def read_csv(self, bucket: str, path: str, **kwargs) -> pd.DataFrame:
 
+        #client = storage.Client()
+        #bucket = client.bucket(bucket)
+        #blob = bucket.blob(path)
+
+        #data = blob.download_as_bytes()  # <-- IMPORTANT
+        #st.write(data)
         blob = self._get_blob(bucket, path)
         raw = blob.download_as_bytes()
         # -----------------------------------------------------
@@ -92,7 +98,6 @@ class GCSStorage(StorageAdapter):
 
         # Decode safely
         text = clean.decode("utf-8", errors="replace")
-
         # -----------------------------------------------------
         # 2. Parse CSV
         # -----------------------------------------------------
@@ -104,7 +109,6 @@ class GCSStorage(StorageAdapter):
 
         # Drop ghost columns created by malformed rows
         df = df.dropna(axis=1, how="all")
-
         # -----------------------------------------------------
         # 3. Enforce STRING columns
         # -----------------------------------------------------

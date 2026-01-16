@@ -84,9 +84,11 @@ def load_csv_from_gcp(storage, bucket, path):
 
 def preprocess_ticket_messages(df):
     # Ensure datetime parsing
+ 
+    df["posted_date"] = df["posted_date"].str.replace(r"\s*\(.*\)$", "", regex=True)
     df["posted_date"] = pd.to_datetime(df["posted_date"], errors="coerce")
     df["closed_date"] = pd.to_datetime(df["closed_date"], errors="coerce")
-    df["msg_datetime"] = pd.to_datetime(df["msg_datetime"], errors="coerce")
+    df["msg_datetime"] = pd.to_datetime(df["msg_datetime"],format="%d-%m-%Y %H:%M",errors="coerce")
 
     # Sort rows within each ticket by message timestamp
     df = df.sort_values(["ticket_id", "msg_datetime"])
@@ -118,7 +120,7 @@ def preprocess_ticket_messages(df):
     )
 
     aggregated["conversation"] = (
-        df.groupby("ticket_id").apply(build_conversation)
+        df.groupby("ticket_id").apply(build_conversation, include_groups=False)
     )
     aggregated = aggregated.reset_index()
 
@@ -151,10 +153,6 @@ def normalize_ticket_dataframe(df):
     if missing:
         st.error(f"Missing required columns: {missing}")
         return pd.DataFrame()
-
-    datetime_cols = ["msg_datetime", "posted_date", "closed_date"]
-    for col in datetime_cols:
-        df[col] = pd.to_datetime(df[col], errors="coerce")
 
     return df
 
@@ -346,7 +344,8 @@ def build_ticket_summary(df):
     # Trend: last 7 days vs previous 7 days
     closed = df[df["status"].str.lower() == "closed"]
     if "ticket_closed_date" in df.columns:
-        closed["ticket_closed_date"] = pd.to_datetime(df["ticket_closed_date"])
+        closed = df[df["ticket_closed_date"].notna()].copy()
+        closed["ticket_closed_date"] = pd.to_datetime(closed["ticket_closed_date"])
         last_7 = closed[closed["ticket_closed_date"] >= (pd.Timestamp.now() - pd.Timedelta(days=7))]
         prev_7 = closed[
             (closed["ticket_closed_date"] < (pd.Timestamp.now() - pd.Timedelta(days=7))) &
@@ -652,17 +651,18 @@ def main():
         #st.line_chart(monthly, x="month", y="tickets")
         
         st.markdown("### Yearly Ticket Trend")
-        ticket_agg["year"] = ticket_agg["ticket_opened_date"].dt.year
+        ticket_agg["year"] = ticket_agg["ticket_opened_date"].dt.year.astype("Int64")
 
         yearly = (
             ticket_agg
             .dropna(subset=["year"])
-            .groupby("year")
+            .groupby("year", as_index=False)
             .size()
-            .reset_index(name="tickets")
+            .rename(columns={"size": "tickets"})
+            .sort_values("year")
         )
 
-        st.line_chart(yearly, x="year", y="tickets")
+        st.bar_chart(yearly, x="year", y="tickets")
     # -----------------------------------------------------
     # TAB 6: Sentiment by Agent (with drill-down)
     # -----------------------------------------------------
