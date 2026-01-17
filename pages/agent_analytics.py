@@ -489,7 +489,12 @@ def main():
 
     ticket_agg = pd.concat([to_process, skipped], ignore_index=True)
 
+    if (len(ticket_agg)) == 0:
+        st.error("No tickets to display")
+        st.stop()
+
     summary = build_ticket_summary(ticket_agg)
+
     # Tabs
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "Ticket Summary",
@@ -594,22 +599,25 @@ def main():
             aggfunc="mean",
         )
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(heatmap_df, annot=True, cmap="Reds", fmt=".2f", ax=ax)
-        st.pyplot(fig)
+        if (len(heatmap_df)) > 0:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.heatmap(heatmap_df, annot=True, cmap="Reds", fmt=".2f", ax=ax)
+            st.pyplot(fig)
 
-        st.subheader("📌 Top 3 Customer Requests by Product")
-        top_requests = compute_top_requests_by_product(ticket_agg)
+            st.subheader("📌 Top 3 Customer Requests by Product")
+            top_requests = compute_top_requests_by_product(ticket_agg)
 
-        for product, requests in top_requests.items():
-            st.markdown(f"### 🛍️ {product}")
-            if not requests:
-                st.write("No customer request data available.")
-                continue
+            for product, requests in top_requests.items():
+                st.markdown(f"### 🛍️ {product}")
+                if not requests:
+                    st.write("No customer request data available.")
+                    continue
 
-            for req, count in requests.items():
-                st.write(f"- **{req}** — {count} requests")
-            st.markdown("---")
+                for req, count in requests.items():
+                    st.write(f"- **{req}** — {count} requests")
+                st.markdown("---")
+            else:
+                st.write("No product assigned for this agent, please contact your admin")
 
     # -----------------------------------------------------
     # TAB 5: Ticket Trends
