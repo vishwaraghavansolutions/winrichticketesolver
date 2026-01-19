@@ -120,7 +120,7 @@ def preprocess_ticket_messages(df):
     )
 
     aggregated["conversation"] = (
-        df.groupby("ticket_id").apply(build_conversation)
+        df.groupby("ticket_id").apply(build_conversation, include_groups=False)
     )
     aggregated = aggregated.reset_index()
 
@@ -491,13 +491,14 @@ def main():
 
     summary = build_ticket_summary(ticket_agg)
     # Tabs
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "Ticket Summary",
         "SLA Overview",
         "Agent Performance",
         "Product Insights",
         "Ticket Trends",
         "Sentiment by Agent",
+        "Aging Tickets",
     ])
     # -----------------------------------------------------
     # TAB 1: Ticket Summary
@@ -695,6 +696,56 @@ def main():
             )
         else:
             st.info("No agent sentiment data available.")
+    # -----------------------------------------------------
+    # TAB 7: Ticket Aging metrics
+    # -----------------------------------------------------
+    with tab7:
+        # Filter only open tickets
+        open_tickets = ticket_agg[ticket_agg["status"] == "open"].copy()
+
+        # Compute ticket age in days
+        open_tickets["ticket_age_days"] = (
+            pd.Timestamp.now().normalize() - open_tickets["ticket_opened_date"].dt.normalize()
+        ).dt.days
+
+        bins = [0, 30, 60, 90, 180, float("inf")]
+        labels = ["0–30 days", "30–60 days", "60–90 days", "90–180 days", "gt 180 days"]
+
+        open_tickets["age_bucket"] = pd.cut(
+            open_tickets["ticket_age_days"],
+            bins=bins,
+            labels=labels,
+            right=False
+        )
+
+        # Summary table
+        age_summary = (
+            open_tickets.groupby("age_bucket")
+            .size()
+            .reset_index(name="open_tickets")
+        )
+
+        st.markdown("### Open Tickets by Age Bucket")
+        st.write(f"Total open tickets {len(open_tickets)}")
+        st.table(age_summary)
+
+        # Sort by age descending
+        open_tickets = open_tickets.sort_values("ticket_age_days", ascending=False)
+
+        # Optional: choose columns to display
+        display_cols = [
+            "ticket_id",
+            "customer_id",
+            "customer_name",
+            "product_name",
+            "ticket_opened_date",
+            "ticket_age_days",
+            "status",
+            "assigned_agent"
+        ]
+
+        st.subheader("Details of Open Tickets by Age")
+        st.dataframe(open_tickets[display_cols], use_container_width=True)
 
 
 # ---------------------------------------------------------
