@@ -731,7 +731,7 @@ def build_net_cashflow_summary(sell_df, buy_df):
 st.title("Portfolio Analysis")
 if "role" not in st.session_state:
     st.write("Please login to access this page.")
-    st.stop
+    st.stop()
 
 customer_master = load_portfolio_local(PORTFOLIO_PATH)
 if customer_master.empty:

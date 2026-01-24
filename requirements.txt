@@ -12,4 +12,4 @@ matplotlib
 TextBlob
 seaborn
 streamlit-aggrid
-rapidfuzz
+rapidfuzz   
