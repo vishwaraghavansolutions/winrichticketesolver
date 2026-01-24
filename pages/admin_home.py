@@ -108,7 +108,7 @@ if "admin_page" in st.session_state:
         time.sleep(3)
         del st.session_state["admin_page"]
 
-        st.switch_page("pages/analytics.py")
+        st.switch_page("pages/TicketAnalytics.py")
 
 # Top-right logout button
 logout_col = st.columns([6, 1])[1]

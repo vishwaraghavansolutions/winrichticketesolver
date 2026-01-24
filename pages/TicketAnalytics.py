@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 from utils.s3storage import S3Storage
 from utils.gcs_storage import GCSStorage
 import utils.navbar as navbar
+import utils.agentnavbar as agentnavbar
 import pandas as pd
 import numpy as np
 import json
 from openai import AsyncOpenAI
+from st_aggrid import AgGrid, GridOptionsBuilder
 import asyncio
 import re
 
@@ -405,15 +407,22 @@ def fmt(value, decimals=1):
 # MAIN STREAMLIT APP
 # ---------------------------------------------------------
 def main():
-    navbar.navbar()
+
     st.title("Ticket Analytics Dashboard")
    
     # Admin check (optional, mirror your other pages)
-    if "role" not in st.session_state or st.session_state["role"] != "admin":
-        st.error("Access denied. Admins only.")
+    if "role" not in st.session_state:
+        st.write("Session expired. Please log in again.")
         st.button("Go to Login Page", on_click=st.switch_page("login.py"))
         st.stop()
 
+    if st.session_state["role"] == "admin":
+        st.success(f"Logged in as Admin ") 
+        navbar.navbar()
+    else:
+        agentnavbar.agentnavbar()
+        st.success(f"Logged in as Agent: {st.session_state['agent_id']}")
+ 
     # Storage setup
     gcs = GCSStorage(credentials_key="gcp")
     # Cloud config from secrets
@@ -446,6 +455,7 @@ def main():
     resolver = load_queue_resolver(s3, bucket, resolver_path)
     
     st.write(f"Loaded {len(ticket_agg)} existing aggregated tickets from analytics.")
+
     new_ticket_agg = preprocess_ticket_messages(df)
     if len(ticket_agg) > 0:
         existing_ticket_ids = set(ticket_agg["ticket_id"].tolist())
@@ -488,6 +498,11 @@ def main():
 
     ticket_agg = pd.concat([to_process, skipped], ignore_index=True)
     save_analytics_to_s3(s3, bucket, analytics_path, ticket_agg)
+
+    # Agent-level filtering, if logged in as agent
+    if st.session_state["role"] == "agent":
+        agent_name = st.session_state["agent_id"]
+        ticket_agg = ticket_agg[ticket_agg["assigned_agent"] == agent_name]
 
     summary = build_ticket_summary(ticket_agg)
     # Tabs
@@ -729,10 +744,8 @@ def main():
         st.write(f"Total open tickets {len(open_tickets)}")
         st.table(age_summary)
 
-        # Sort by age descending
         open_tickets = open_tickets.sort_values("ticket_age_days", ascending=False)
 
-        # Optional: choose columns to display
         display_cols = [
             "ticket_id",
             "customer_id",
@@ -741,11 +754,57 @@ def main():
             "ticket_opened_date",
             "ticket_age_days",
             "status",
+            "sentiment_label",
             "assigned_agent"
         ]
 
         st.subheader("Details of Open Tickets by Age")
-        st.dataframe(open_tickets[display_cols], use_container_width=True)
+
+        gb = GridOptionsBuilder.from_dataframe(open_tickets[display_cols])
+        gb.configure_selection('single')  # allow single row selection
+        #gb.configure_grid_options(domLayout='autoHeight')
+        grid_options = gb.build()
+
+        grid_response = AgGrid(
+            open_tickets[display_cols],
+            gridOptions=grid_options,
+            enable_enterprise_modules=False,
+            update_mode="SELECTION_CHANGED",
+            height=400,
+            fit_columns_on_grid_load=True
+        )
+
+        selected = grid_response["selected_rows"]       
+        if selected is not None and len(selected) > 0:
+            ticket_id = selected.iloc[0]["ticket_id"]
+            st.write("Selected Ticket ID:", ticket_id)
+            # ---------------------------------------------------------
+            # TIMELINE (FROM LIFECYCLE CSV)
+            # ---------------------------------------------------------
+            with st.expander("Timeline", expanded=True):
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
+
+                csv_rows = df[df["ticket_id"] == ticket_id].sort_values("posted_date")
+                for _, row in csv_rows.iterrows():
+
+                    msg = row.get("msg_content", "") or ""
+                    ts = str(row["posted_date"])
+                    msg_from = row.get("message_from", "customer").lower()
+                    message_text = msg_from + " : " + ts
+
+                    st.markdown(
+                        f"""
+                        <div class="chat-bubble chat-bubble-customer">
+                            <div>{msg}</div>
+                            <div class="chat-meta" style="text-align: right; font-family: Arial; color: #670;"><small>{message_text}</small></div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------

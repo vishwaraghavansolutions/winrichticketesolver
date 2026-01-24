@@ -6,3 +6,6 @@ __pycache__/
 *.csv
 venv/
 .venv/
+data/*.xlsx
+pages/__pycache__/
+pages/*.pyx

@@ -11,3 +11,4 @@ google-cloud-storage
 matplotlib
 TextBlob
 seaborn
+streamlit-aggrid

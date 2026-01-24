@@ -85,7 +85,7 @@ if "admin_page" in st.session_state:
         st.success("Loading agent analytics page...")
         time.sleep(3)
         del st.session_state["admin_page"]
-        st.switch_page("pages/agent_analytics.py")
+        st.switch_page("pages/TicketAnalytics.py")
 
     # ------------------ Resolver Editor Page ------------------
     elif st.session_state["admin_page"] == "agent_coach":

@@ -1,0 +1,44 @@
+{
+  "asset_class_targets": {
+    "Equity": 50,
+    "Debt": 30,
+    "Hybrid": 10,
+    "Balanced":10,
+    "Solution-Oriented": 0
+  },
+
+  "fund_type_targets": {
+    "Equity": {
+      "Large Cap Fund": 20,
+      "Flexi Cap Fund": 15,
+      "multi_cap": 10,
+      "Large & Mid Cap Fund": 10,
+      "Mid Cap Fund": 10,
+      "thematic": 5,
+      "balanced_fund": 25,
+      "Small Cap Fund": 5,
+      "ELSS": 5
+    },
+    "Debt": {
+      "Dynamic Bond": 20,
+      "short_duration": 15,
+      "Medium Duration Fund": 10,
+      "liquid": 10,
+      "money_market": 10,
+      "credit_risk": 5,
+      "gilt": 10,
+      "floater": 20
+    },
+    "Hybrid": {
+      "Multi Asset Allocation": 30,
+      "Medium to Long Duration Fund": 30,
+      "Dynamic Asset Allocation or Balanced Advantage Fund": 40
+    },
+    "Solution Oriented": {
+    "Retirement Planning Mutual Funds": 25,
+    "Children's Gift Mutual Fund": 25,
+    "Equity Solution-Oriented Schemes Taxation": 25,
+    "Debt Solution-Oriented Schemes Taxation": 25
+    }
+  }
+}
