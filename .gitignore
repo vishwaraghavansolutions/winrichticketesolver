@@ -3,7 +3,6 @@ __pycache__/
 .env
 .streamlit/secrets.toml
 *.parquet
-*.csv
 venv/
 .venv/
 data/*.xlsx
