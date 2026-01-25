@@ -515,8 +515,8 @@ def step7_redeployment(row, asset_class_targets):
 # ============================================================
 
 def step8_underperformers(row, bottom_half_by_type):
-    st.header("Step 8 — Underperformer Detection")
-    st.subheader("Underperformers (Bottom 50% by Fund Type from Winrich Rankings)")
+    st.subheaderheader("Underperformer Detection")
+    st.write("Underperformers based on Winrich Rankings (Bottom 50% by Funds in ranking files)")
 
     under_rows = []
 
