@@ -1,0 +1,99 @@
+{
+    "A Balamurugan": {
+        "asset_class_targets": {
+            "Equity": 45.0,
+            "Hybrid": 35.0,
+            "Debt": 20.0
+        },
+        "fund_type_targets": {
+            "Equity": {
+                "Large Cap Fund": 57.78,
+                "Large & Mid Cap Fund": 19.7,
+                "Multi Cap Fund": 0.43,
+                "Flexi Cap Fund": 19.67,
+                "Mid Cap Fund": 2.42
+            },
+            "Hybrid": {
+                "Dynamic Asset Allocation or Balanced Advantage": 76.98,
+                "Multi Asset Allocation": 23.02
+            },
+            "Debt": {
+                "Dynamic Bond": 51.07,
+                "Credit Risk Fund": 10.81,
+                "Medium Duration Fund": 38.12
+            }
+        },
+        "advisor_notes": "",
+        "risk_profile": "Moderate"
+    },
+    "Abhinesh Vemula": {
+        "asset_class_targets": {
+            "Debt": 33.2,
+            "Equity": 53.97,
+            "Hybrid": 12.83
+        },
+        "fund_type_targets": {
+            "Debt": {
+                "Banking and PSU Fund": 15.36,
+                "Medium Duration Fund": 33.3,
+                "Dynamic Bond": 31.13,
+                "Medium to Long Duration Fund": 14.54,
+                "Credit Risk Fund": 5.67
+            },
+            "Equity": {
+                "Large Cap Fund": 42.75,
+                "Large & Mid Cap Fund": 28.85,
+                "Flexi Cap Fund": 22.58,
+                "Small Cap Fund": 5.82
+            },
+            "Hybrid": {
+                "Dynamic Asset Allocation or Balanced Advantage": 100.0
+            }
+        },
+        "advisor_notes": "Hello this is an example",
+        "risk_profile": "Moderate"
+    },
+    "Abhinav Kapoor": {
+        "asset_class_targets": {
+            "Hybrid": 21.45,
+            "Equity": 78.55
+        },
+        "fund_type_targets": {
+            "Hybrid": {
+                "Dynamic Asset Allocation or Balanced Advantage": 100.0
+            },
+            "Equity": {
+                "Large & Mid Cap Fund": 30.0,
+                "Large Cap Fund": 45.0,
+                "Mid Cap Fund": 5.0,
+                "Small Cap Fund": 20.0
+            }
+        },
+        "advisor_notes": "Wrote this notes for abhinav",
+        "risk_profile": "Moderate"
+    },
+    "Padmaksha Bhat": {
+        "asset_class_targets": {
+            "Equity": 41.77,
+            "Debt": 46.93,
+            "Hybrid": 11.3
+        },
+        "fund_type_targets": {
+            "Equity": {
+                "Large Cap Fund": 57.24,
+                "Flexi Cap Fund": 22.53,
+                "Large & Mid Cap Fund": 15.71,
+                "Multi Cap Fund": 4.52
+            },
+            "Debt": {
+                "Ultra Short Duration Fund": 75.89,
+                "Dynamic Bond": 24.11
+            },
+            "Hybrid": {
+                "Dynamic Asset Allocation or Balanced Advantage": 100.0
+            }
+        },
+        "advisor_notes": "",
+        "risk_profile": "Aggressive"
+    }
+}
