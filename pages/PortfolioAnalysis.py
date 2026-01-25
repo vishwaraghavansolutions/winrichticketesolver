@@ -301,13 +301,14 @@ def step5_target_model_editor(row):
         saved_notes = ""
         saved_risk_profile = ""
 
-    st.header("Step 5 — Target Model Editor")
+    #st.header("Step 5 — Target Model Editor")
+    st.subheader("Set allocation targets for this customer")
 
     updated_ac_targets = {}
     updated_ft_targets = {}
 
     # Asset Class Targets
-    with st.expander("Asset Class Targets", expanded=True):
+    with st.expander("Set targets by Asset Class", expanded=True):
         st.subheader("Asset Class Allocation (Must total 100%)")
 
         for ac, pct in default_ac_targets.items():
@@ -328,7 +329,7 @@ def step5_target_model_editor(row):
 
     # Fund-Type Targets
     for ac, ft_dict in default_ft_targets.items():
-        with st.expander(f"Fund Types for {ac}", expanded=False):
+        with st.expander(f"Set targets for Fund Types for Asset Class: {ac}", expanded=False):
             st.subheader(f"{ac} — Fund-Type Allocation (Must total 100%)")
 
             overridden = {}
@@ -360,7 +361,7 @@ def step5_target_model_editor(row):
         )
 
     # Risk Profile
-    with st.expander("Risk Profile", expanded=False):
+    with st.expander("Set CustomerRisk Profile", expanded=False):
         risk_options = [
             "Conservative",
             "Moderately Conservative",
@@ -407,7 +408,8 @@ def step5_target_model_editor(row):
 # ============================================================
 
 def step6_breach_summary(row, asset_class_targets, fund_type_targets):
-    st.header("Step 6 — Breach Summary")
+    #st.header("Step 6 — Breach Summary")
+    st.subheader("Allocation Summary")
 
     breach_rows = []
 
@@ -474,7 +476,8 @@ def step6_breach_summary(row, asset_class_targets, fund_type_targets):
 # ============================================================
 
 def step7_redeployment(row, asset_class_targets):
-    st.header("Step 7 — Redeployment Recommendations")
+    #st.header("Step 7 — Redeployment Recommendations")
+    st.subheader("Redeployment Recommendations")
 
     total_value = sum(ac["actual_value"] for ac in row["asset_class"].values())
 
@@ -513,6 +516,7 @@ def step7_redeployment(row, asset_class_targets):
 
 def step8_underperformers(row, bottom_half_by_type):
     st.header("Step 8 — Underperformer Detection")
+    st.subheader("Underperformers (Bottom 50% by Fund Type from Winrich Rankings)")
 
     under_rows = []
 
