@@ -95,5 +95,18 @@
         },
         "advisor_notes": "",
         "risk_profile": "Aggressive"
+    },
+    "Ranan Dey": {
+        "asset_class_targets": {
+            "Equity": 100.0
+        },
+        "fund_type_targets": {
+            "Equity": {
+                "ELSS": 28.19,
+                "Mid Cap Fund": 71.81
+            }
+        },
+        "advisor_notes": "",
+        "risk_profile": "Moderate"
     }
 }

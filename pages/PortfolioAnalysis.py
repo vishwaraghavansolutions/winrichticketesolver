@@ -625,6 +625,34 @@ bottom_half_by_type = {
 # Step 6 — Breach Summary
 breach_df = step6_breach_summary(row, asset_class_targets_step5, fund_type_targets_step5)
 
+# ============================================================
+# AMC Allocation Summary
+# ============================================================
+st.subheader("AMC Allocation Summary")
+
+amc_rows = []
+
+total_value = sum(f["actual_value"] for f in row["funds"].values())
+
+# Aggregate by AMC
+amc_totals = {}
+for fname, fdata in row["funds"].items():
+    amc = fdata["AMC"]
+    amc_totals[amc] = amc_totals.get(amc, 0) + fdata["actual_value"]
+
+# Build table rows
+for amc, value in amc_totals.items():
+    pct = (value / total_value * 100) if total_value > 0 else 0
+
+    amc_rows.append({
+        "AMC": amc,
+        "Total Value": format_in_indian(value),
+        "Allocation %": round(pct, 2)
+    })
+
+amc_df = pd.DataFrame(amc_rows).sort_values("Allocation %", ascending=False)
+st.dataframe(amc_df)
+
 # Step 7 — Redeployment Recommendations
 redeploy_df = step7_redeployment(row, asset_class_targets_step5)
 
