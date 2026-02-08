@@ -13,3 +13,5 @@ TextBlob
 seaborn
 streamlit-aggrid
 rapidfuzz   
+reportlab 
+email

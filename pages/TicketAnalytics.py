@@ -403,6 +403,14 @@ def fmt(value, decimals=1):
     if value is None or pd.isna(value):
         return "N/A"
     return f"{value:.{decimals}f}"
+
+@st.cache_resource
+def build_grid_options(df, display_cols):
+    gb = GridOptionsBuilder.from_dataframe(df[display_cols])
+    gb.configure_default_column(resizable=True, flex=1)
+    gb.configure_selection('single')
+    return gb.build()
+
 # ---------------------------------------------------------
 # MAIN STREAMLIT APP
 # ---------------------------------------------------------
@@ -745,7 +753,6 @@ def main():
         st.table(age_summary)
 
         open_tickets = open_tickets.sort_values("ticket_age_days", ascending=False)
-
         display_cols = [
             "ticket_id",
             "customer_id",
@@ -755,30 +762,44 @@ def main():
             "ticket_age_days",
             "status",
             "sentiment_label",
-            "assigned_agent"
+            "assigned_agent",
+            "sentiment_rationale",
+            "sentiment_recommendation"
         ]
 
         st.subheader("Details of Open Tickets by Age")
 
-        gb = GridOptionsBuilder.from_dataframe(open_tickets[display_cols])
-        gb.configure_selection('single')  # allow single row selection
-        #gb.configure_grid_options(domLayout='autoHeight')
-        grid_options = gb.build()
+        data = open_tickets[display_cols].to_dict("records")
+        grid_options = build_grid_options(open_tickets, display_cols)
+        df_view = open_tickets[display_cols]
 
         grid_response = AgGrid(
-            open_tickets[display_cols],
+            df_view,
             gridOptions=grid_options,
             enable_enterprise_modules=False,
-            update_mode="SELECTION_CHANGED",
-            height=400,
-            fit_columns_on_grid_load=True
+            update_mode="MODEL_CHANGED",
+            height=400
         )
 
-        selected = grid_response["selected_rows"]       
+        selected = grid_response["selected_rows"]
+
         if selected is not None and len(selected) > 0:
             ticket_id = selected.iloc[0]["ticket_id"]
             st.write("Selected Ticket ID:", ticket_id)
-            # ---------------------------------------------------------
+            st.markdown(
+                f"<p style='color:#d62728;'><b>Sentiment Label:</b> {selected.iloc[0].get('sentiment_label', 'N/A')}</p>",
+                unsafe_allow_html=True   
+            )
+
+            st.markdown(
+                f"<p style='color:#1f77b4;'><b>Sentiment Rationale:</b> {selected.iloc[0].get('sentiment_rationale', 'N/A')}</p>",
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
+                f"<p style='color:#2ca02c;'><b>Sentiment Recommendation:</b> {selected.iloc[0].get('sentiment_recommendation', 'N/A')}</p>",
+                unsafe_allow_html=True
+            )            # ---------------------------------------------------------
             # TIMELINE (FROM LIFECYCLE CSV)
             # ---------------------------------------------------------
             with st.expander("Timeline", expanded=True):
