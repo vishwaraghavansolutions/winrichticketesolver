@@ -38,7 +38,7 @@ def navbar():
 
     with cols[3]:
         if st.button("📊 Analytics", key="nav_analytics"):
-            st.switch_page("pages/analytics.py")
+            st.switch_page("pages/TicketAnalytics.py")
 
     with cols[4]:
         if st.button("🚪 Logout", key="nav_logout"):
