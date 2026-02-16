@@ -1071,8 +1071,9 @@ def main():
         if selected_sentiments:
             filtered_tickets = filtered_tickets[filtered_tickets['sentiment_label'].isin(selected_sentiments)]
 
-        if selected_products and 'product' in filtered_tickets.columns:
-            filtered_tickets = filtered_tickets[filtered_tickets['product'].isin(selected_products)]
+        if selected_products and 'product_name' in filtered_tickets.columns:
+            filtered_tickets = filtered_tickets[filtered_tickets['product_name'].isin(selected_products)]
+
 
         # Apply single-select filters
         if selected_agent != 'All' and 'assigned_agent' in filtered_tickets.columns:

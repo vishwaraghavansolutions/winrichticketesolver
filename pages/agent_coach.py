@@ -8,6 +8,10 @@ import utils.agentnavbar as navbar
 import pandas as pd
 import numpy as np
 from openai import OpenAI
+from utils.s3storage import S3Storage
+import json
+import pandas as pd
+from datetime import datetime, timedelta
 
 def compute_agent_performance(df: pd.DataFrame):
     agents = {}
@@ -45,6 +49,65 @@ def compute_agent_performance(df: pd.DataFrame):
 
     return agents
 
+def prepare_ai_input(ticket_agg):
+    ticket_agg['ticket_opened_date'] = pd.to_datetime(ticket_agg['ticket_opened_date'])
+    ticket_agg['ticket_closed_date'] = pd.to_datetime(ticket_agg['ticket_closed_date'])
+
+    cutoff_date = datetime.now() - timedelta(days=30)
+    recent = ticket_agg[ticket_agg['ticket_opened_date'] >= cutoff_date]
+
+    worst_sla = (
+        recent[recent['sla_breached'] == True]
+        .sort_values(by='hours_to_close', ascending=False)
+        .head(3)
+    )
+
+    negative = (
+        recent[recent['sentiment_label'] == 'negative']
+        .sort_values(by='hours_to_close', ascending=False)
+        .head(3)
+    )
+
+    focus = pd.concat([worst_sla, negative]).drop_duplicates(subset=['ticket_id'])
+
+    ai_records = focus[[
+        'ticket_id', 'customer_name', 'assigned_agent', 'hours_to_close',
+        'sentiment_label', 'sla_breached', 'transcript'
+    ]]
+
+    return ai_records.to_dict(orient='records')
+
+def generate_agent_report(ai_ticket_data):
+
+    prompt = f"""
+You are an expert customer-experience auditor. Analyze the following ticket dataset and generate a detailed performance report for the agent.
+
+### Input Data (JSON):
+{json.dumps(ai_ticket_data, indent=2)}
+
+### Your Tasks:
+1. Identify patterns across negative-sentiment tickets.
+2. Explain root causes behind SLA breaches.
+3. Analyze customer frustration signals from transcripts.
+4. Highlight agent behavior patterns (communication gaps, tone issues, delays, etc.).
+5. Produce a final summary table with:
+   - Issue Category
+   - Evidence from Tickets
+   - Impact on Customer Experience
+   - Recommended Agent Actions
+   - Examples of improved communication for each issue
+
+### Tone & Style:
+- Professional
+- Insight-driven
+- Actionable
+- Clear and structured
+- Tie every recommendation to patterns in the data
+"""
+
+    return llm_call(prompt)  #
+    #return response.choices[0].message["content"]
+
 def compute_agent_sentiment_trend(df: pd.DataFrame) -> pd.DataFrame:
     if "sentiment_label" not in df.columns:
         return pd.DataFrame()
@@ -59,6 +122,7 @@ def compute_agent_sentiment_trend(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     return trend
+
 
 def build_agent_coaching_prompt(agent_name: str, metrics: dict) -> str:
     sent = metrics.get("sentiment_counts", {})
@@ -78,7 +142,6 @@ Metrics:
 Write a short, constructive coaching note (1-3 bullet points) that:
 - Encourages the agent
 - Suggests concrete ways to improve SLA
-- Suggests concrete ways to improve customer sentiment
 - Uses specific, actionable language
 - Avoids generic platitudes
 - Include a day wise plan to demonstrate improvement
@@ -122,13 +185,11 @@ client = OpenAI()
 navbar.agentnavbar()
 
 st.title("Agent Coaching & Performance App")
-if "role" not in st.session_state or st.session_state["role"] != "agent":
+if "role" not in st.session_state: 
     st.error("Access denied. Admins only.")
     st.button("Go to Login Page", on_click=st.switch_page("login.py"))
     st.stop()
-
-st.write(f"Welcome {st.session_state["agent_name"]}")
-                     
+                    
 s3 = S3Storage(
     aws_access_key=st.secrets["aws"]["access_key"],
     aws_secret_key=st.secrets["aws"]["secret_key"],
@@ -141,12 +202,17 @@ analytics_path = st.secrets["aws"]["analytics_path"]
 ticket_agg = s3.read_parquet(bucket, analytics_path) 
 st.write(f"Loaded {len(ticket_agg)} existing aggregated tickets from analytics.")
 ticket_agg = prepare_ticket_df(ticket_agg)
+
+if st.session_state["role"] == "admin":
+    display_list = ticket_agg['assigned_agent'].dropna().unique().tolist()
+    selected_agent = st.selectbox("Select agent to coach", display_list)
+else:
+    selected_agent = st.session_state["agent_id"]
+
 agent_metrics = compute_agent_performance(ticket_agg)
 trend_df = compute_agent_sentiment_trend(ticket_agg)
 
 agents = sorted(agent_metrics.keys())
-selected_agent = st.session_state["agent_id"]
-
 m = agent_metrics[selected_agent]
 # Metrics
 col1, col2, col3 = st.columns(3)
@@ -169,7 +235,21 @@ else:
 
 # Coaching
 st.subheader("Coaching Suggestions")
-if st.button("Generate Coaching Message"):
-    with st.spinner("generating .."):
-         coaching = generate_coaching_message(selected_agent, m)
-    st.write(coaching)
+# Create two columns
+col1, col2 = st.columns([1, 2])   # left = controls, right = output
+coaching = ""
+with col1:
+    if st.button("Coach me on performance"):
+        with st.spinner("Generating..."):
+            coaching = generate_coaching_message(selected_agent, m)
+st.write(coaching)
+
+report = ""
+with col2:
+    if st.button ("Coach me on communication"):
+        with st.spinner("Generating detailed report..."):
+            selected_agent_tickets = ticket_agg[ticket_agg["assigned_agent"] == selected_agent].copy()
+            ai_data = prepare_ai_input(selected_agent_tickets)
+            report = generate_agent_report(ai_data)
+
+st.write(report)
