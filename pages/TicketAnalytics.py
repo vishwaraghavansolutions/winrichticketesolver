@@ -416,6 +416,7 @@ def build_ticket_summary(df):
     return summary
 
 def compute_top_requests_by_product(df):
+ 
     if "product_name" not in df.columns or "customer_request" not in df.columns:
         return {}
 
@@ -472,7 +473,7 @@ def identify_tickets_needing_analysis(
     Returns: (tickets_to_process, tickets_to_skip)
     """
     
-    required_cols = ["sentiment_label", "sentiment_rationale", "sentiment_recommendation"]
+    required_cols = ["sentiment_label", "sentiment_rationale", "sentiment_recommendation", "customer_request"]
     
     # Load existing analytics from S3
     try:
@@ -515,7 +516,7 @@ def identify_tickets_needing_analysis(
         
         # Create lookup for existing tickets
         existing_lookup = existing_agg.set_index('ticket_id')[[
-            '_content_hash', 'sentiment_label', 'sentiment_rationale', 'sentiment_recommendation'
+            '_content_hash', 'sentiment_label', 'sentiment_rationale', 'sentiment_recommendation', 'customer_request'
         ]].to_dict('index')
         
         # Identify tickets that need processing
@@ -548,6 +549,7 @@ def identify_tickets_needing_analysis(
                     ticket_agg.at[idx, 'sentiment_label'] = existing_ticket.get('sentiment_label')
                     ticket_agg.at[idx, 'sentiment_rationale'] = existing_ticket.get('sentiment_rationale')
                     ticket_agg.at[idx, 'sentiment_recommendation'] = existing_ticket.get('sentiment_recommendation')
+                    ticket_agg.at[idx, 'customer_request'] = existing_ticket.get('customer_request')
         
         to_process = ticket_agg[tickets_to_process_mask].copy()
         skipped = ticket_agg[~pd.Series(tickets_to_process_mask)].copy()
@@ -563,6 +565,45 @@ def identify_tickets_needing_analysis(
         # st.write(f"  - Skipping {len(skipped)} unchanged tickets with existing sentiment.")
     
     return to_process, skipped, ticket_agg
+
+def sla_stats_by_product_and_request(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Computes mean and median SLA hours grouped by:
+    - product_name
+    - customer_request (nature of request)
+    """
+
+    # Ensure required columns exist
+    required = ["product_name", "customer_request", "hours_to_close"]
+    for col in required:
+        if col not in df.columns:
+            raise ValueError(f"Missing required column: {col}")
+
+    # Group and aggregate
+    stats = (
+        df.groupby(["product_name", "customer_request"])
+          .agg(
+              mean_sla_hours=("hours_to_close", "mean"),
+              median_sla_hours=("hours_to_close", "median"),
+              ticket_count=("hours_to_close", "count")
+          )
+          .reset_index()
+          .sort_values(["product_name", "customer_request"])
+    )
+
+    # Group and aggregate
+    pstats = (
+        df.groupby(["product_name"])
+          .agg(
+              mean_sla_hours=("hours_to_close", "mean"),
+              median_sla_hours=("hours_to_close", "median"),
+              ticket_count=("hours_to_close", "count")
+          )
+          .reset_index()
+          .sort_values(["product_name"])
+    )
+
+    return stats, pstats
 # ---------------------------------------------------------
 # MAIN STREAMLIT APP
 # ---------------------------------------------------------
@@ -656,8 +697,11 @@ def main():
         to_process = asyncio.run(apply_llm_sentiment_async(to_process, client))
         
         # Merge processed tickets back with skipped ones
-        final_ticket_agg = pd.concat([to_process, skipped], ignore_index=True)
-        
+        frames = []
+        for df in [to_process, skipped]:
+            if not df.empty and not df.isna().all().all():
+                frames.append(df)
+        final_ticket_agg = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()  
         st.success(f"Sentiment analysis complete. Total tickets: {len(final_ticket_agg)}")
     else:
         st.info("No tickets need sentiment analysis. All tickets are up to date.")
@@ -790,6 +834,13 @@ def main():
         prod_sla = ticket_agg.groupby("product_name")["sla_breached"].mean().reset_index()
         st.bar_chart(prod_sla, x="product_name", y="sla_breached")
 
+        st.write("### SLA Metrics by Product and Customer Request")
+        sla_stats, prod_stats = sla_stats_by_product_and_request(ticket_agg)
+        st.dataframe(sla_stats)
+
+        st.write("### SLA Metrics by Product")
+        st.dataframe(prod_stats)
+        
     # -----------------------------------------------------
     # TAB 3: Agent Performance
     # -----------------------------------------------------
