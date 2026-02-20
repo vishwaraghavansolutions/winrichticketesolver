@@ -183,7 +183,7 @@ def main():
         sla_value = col3.number_input(
             f"SLA for {product}",
             min_value=1,
-            max_value=240,
+            max_value=400,
             value=current_sla,
             key=f"sla_for_{product}"
         )
