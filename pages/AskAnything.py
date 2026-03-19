@@ -150,11 +150,10 @@ def main():
                     "dataframes": dataframes,
                 })
             else:
-                error_msg = f"Sorry, I couldn't answer that: {response.error}"
-                st.error(error_msg)
+                st.error(response.error)
                 st.session_state["ama_display"].append({
                     "role": "assistant",
-                    "content": error_msg,
+                    "content": f"❌ {response.error}",
                 })
 
 

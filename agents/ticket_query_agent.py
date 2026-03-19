@@ -95,9 +95,12 @@ class TicketQueryAgent(Agent):
     # Internal helpers
     # ------------------------------------------------------------------
 
+    # Columns that contain complex objects (lists/dicts) — not useful for analytics
+    _DROP_COLS = {"conversation", "transcript"}
+
     def _sanitised_df(self) -> pd.DataFrame:
-        """Return a copy with all datetime columns made timezone-naive."""
-        df = self._df.copy()
+        """Return a copy with datetime columns timezone-naive and complex columns dropped."""
+        df = self._df.drop(columns=[c for c in self._DROP_COLS if c in self._df.columns])
         for col in df.columns:
             if pd.api.types.is_datetime64_any_dtype(df[col]):
                 if df[col].dt.tz is not None:
@@ -175,8 +178,10 @@ class TicketQueryAgent(Agent):
         )
         dataframes: List[pd.DataFrame] = []
         last_tool_succeeded = False
+        last_error: str = ""
+        max_iterations = 6
 
-        while True:
+        for _ in range(max_iterations):
             # Require a tool call until at least one succeeds
             tool_choice = "auto" if last_tool_succeeded else "required"
 
@@ -210,6 +215,8 @@ class TicketQueryAgent(Agent):
                     )
                     if succeeded:
                         last_tool_succeeded = True
+                    else:
+                        last_error = result_text
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
@@ -219,4 +226,7 @@ class TicketQueryAgent(Agent):
 
             break
 
-        return AgentResponse(AgentStatus.FAILED, error="Agent loop ended unexpectedly.")
+        return AgentResponse(
+            AgentStatus.FAILED,
+            error=f"Could not complete the query after {max_iterations} attempts.\nLast error: {last_error}",
+        )
