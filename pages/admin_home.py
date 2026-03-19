@@ -40,7 +40,7 @@ if st.session_state.get("role") != "admin":
 # Admin Action Panels
 # ---------------------------------------------------------
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 # ------------------ Refresh Queue Data -------------------
 # with col1:
@@ -71,6 +71,13 @@ with col3:
     st.write("View metrics and Reports.")
     if st.button("View Analytics", use_container_width=True):
         st.session_state["admin_page"] = "Analytics"
+
+# ------------------ Ask Me Anything ------------------
+with col4:
+    st.markdown("### 🤖 Ask Me Anything")
+    st.write("Ask plain-English questions about your ticket data.")
+    if st.button("Ask Me Anything", use_container_width=True):
+        st.session_state["admin_page"] = "ask_me_anything"
 
 st.markdown("---")
 
@@ -107,8 +114,14 @@ if "admin_page" in st.session_state:
         st.success("Loading analytics page...")
         time.sleep(3)
         del st.session_state["admin_page"]
-
         st.switch_page("pages/TicketAnalytics.py")
+
+    # ------------------ Ask Me Anything ------------------
+    elif st.session_state["admin_page"] == "ask_me_anything":
+        st.success("Loading Ask Me Anything...")
+        time.sleep(3)
+        del st.session_state["admin_page"]
+        st.switch_page("pages/AskAnything.py")
 
 # Top-right logout button
 logout_col = st.columns([6, 1])[1]

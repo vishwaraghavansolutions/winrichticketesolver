@@ -1324,6 +1324,7 @@ def main():
                 st.info("👆 Click on a row in the table above to view ticket details")
         else:
             st.warning("⚠️ No tickets match the selected filters. Please adjust your criteria.")
+
 # ---------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------

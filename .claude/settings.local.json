@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(echo \"anthropic>=0.36\")",
+      "Bash(\"c:/MyWorkSpace/Ourlife/Apps/Python/TicketClassifier/requirements.txt\")"
+    ]
+  }
+}

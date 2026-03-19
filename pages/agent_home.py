@@ -40,7 +40,7 @@ if st.session_state.get("role") != "agent":
 # Admin Action Panels
 # ---------------------------------------------------------
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 # ------------------ Refresh Queue Data -------------------
 # with col1:
@@ -64,6 +64,13 @@ with col2:
     st.write("Deep Dive into tickets I resolved and view AI recommendations and suggestions ")
     if st.button("Agent Coach", use_container_width=True):
         st.session_state["admin_page"] = "agent_coach"
+
+# ------------------ Ask Me Anything ------------------
+with col3:
+    st.markdown("### 🤖 Ask Me Anything")
+    st.write("Ask plain-English questions about your ticket data.")
+    if st.button("Ask Me Anything", use_container_width=True):
+        st.session_state["admin_page"] = "ask_me_anything"
 
 st.markdown("---")
 
@@ -93,6 +100,13 @@ if "admin_page" in st.session_state:
         time.sleep(3)
         del st.session_state["admin_page"]
         st.switch_page("pages/agent_coach.py")
+
+    # ------------------ Ask Me Anything ------------------
+    elif st.session_state["admin_page"] == "ask_me_anything":
+        st.success("Loading Ask Me Anything...")
+        time.sleep(3)
+        del st.session_state["admin_page"]
+        st.switch_page("pages/AskAnything.py")
 
 # Top-right logout button
 logout_col = st.columns([6, 1])[1]
